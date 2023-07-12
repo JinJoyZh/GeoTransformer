@@ -46,6 +46,12 @@ def merge_ply(ply_1, ply_2):
     return new_ply
 
 if __name__ == '__main__':
+    path = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused1.ply'
+    ply = o3d.io.read_point_cloud(path)
+    ply = ply.voxel_down_sample(voxel_size=0.07)
+    print(ply)
+    o3d.visualization.draw_geometries([ply])
+
     # ply_path_1 = 'cloud_1.ply'
     # ply_1 = create_ply(ply_path_1)
     # points_1 = np.asarray(ply_1.points)
@@ -54,8 +60,6 @@ if __name__ == '__main__':
     # ply_path_2 = 'cloud_2.ply'
     # ply_2 = create_ply(ply_path_2)
     # ply_3 = merge_ply(ply_1, ply_2)
-    # o3d.visualization.draw_geometries([ply_3])
+    # o3d.visualization.draw_geometries([ply_1])
 
-    path = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused1.ply'
-    plydata = o3d.io.read_point_cloud(path)
-    o3d.visualization.draw_geometries([plydata])
+    # read_npy('ref.npy')

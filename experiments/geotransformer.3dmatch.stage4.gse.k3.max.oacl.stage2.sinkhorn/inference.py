@@ -1,4 +1,5 @@
 import argparse
+import datetime
 
 import numpy as np
 import open3d as o3d
@@ -7,22 +8,21 @@ import torch
 from config import make_cfg
 from geotransformer.utils.data import registration_collate_fn_stack_mode
 from geotransformer.utils.open3d import make_open3d_point_cloud, get_color
-from geotransformer.utils.registration import compute_registration_error
 from geotransformer.utils.torch import to_cuda, release_cuda
 from model import create_model
-import datetime
 
 
 def make_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--src_file", required=True, help="src point cloud numpy file")
-    parser.add_argument("--ref_file", required=True, help="src point cloud numpy file")
-    parser.add_argument("--weights", required=True, help="model weights file")
+    parser.add_argument("--src_file", required=True, help="src ply file path")
+    parser.add_argument("--ref_file", required=True, help="ref ply file path")
+    parser.add_argument("--weights", required=True, help="model weights file path")
     return parser
 
 
 def read_points(path):
     plydata = o3d.io.read_point_cloud(path)
+    plydata = plydata.voxel_down_sample(voxel_size=0.07)
     points = np.asarray(plydata.points)
     colors = np.asarray(plydata.colors)
     return points, colors
@@ -87,6 +87,16 @@ def main():
     ref_points = output_dict["ref_points"]
     src_points = output_dict["src_points"]
     estimated_transform = output_dict["estimated_transform"]
+    #print prediction results
+    print("prediction done! estimated_transform: ")
+    print(estimated_transform)
+    print("corr shapes")
+    print(output_dict['ref_node_corr_knn_points'].shape)
+    print(output_dict['src_node_corr_knn_points'].shape)
+    end_time = datetime.datetime.now()
+    time_consumed = (end_time - start_time).seconds
+    print("time cost: ")
+    print(time_consumed)
 
     ref_pcd = make_open3d_point_cloud(ref_points)
     ref_pcd.estimate_normals()
