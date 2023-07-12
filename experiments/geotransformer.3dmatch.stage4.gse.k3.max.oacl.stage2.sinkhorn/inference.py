@@ -2,6 +2,9 @@ import argparse
 
 import torch
 import numpy as np
+import plyfile
+
+import open3d as o3d
 
 from geotransformer.utils.data import registration_collate_fn_stack_mode
 from geotransformer.utils.torch import to_cuda, release_cuda
@@ -21,17 +24,26 @@ def make_parser():
     return parser
 
 
+def read_points(path):
+    plydata = o3d.io.read_point_cloud(path)
+    points = np.asarray(plydata.points)
+    colors = np.asarray(plydata.colors)
+    return points, colors
+
 def load_data(args):
-    src_points = np.load(args.src_file)
-    ref_points = np.load(args.ref_file)
+    src_points, src_colors = read_points(args.src_file)
+    ref_points, ref_colors = read_points(args.ref_file)
     src_feats = np.ones_like(src_points[:, :1])
     ref_feats = np.ones_like(ref_points[:, :1])
 
     data_dict = {
         "ref_points": ref_points.astype(np.float32),
+        "ref_colors": ref_colors,
         "src_points": src_points.astype(np.float32),
+        "src_colors": src_colors,
         "ref_feats": ref_feats.astype(np.float32),
         "src_feats": src_feats.astype(np.float32),
+
     }
 
     if args.gt_file is not None:
@@ -40,6 +52,18 @@ def load_data(args):
 
     return data_dict
 
+def merge_ply(ply_1, ply_2, file_name):
+    points_1 = np.asarray(ply_1.points)
+    colors_1 = np.asarray(ply_1.colors)
+    points_2 = np.asarray(ply_2.points)
+    colors_2 = np.asarray(ply_2.colors)
+    new_points = np.concatenate((points_1, points_2), axis=0)
+    new_colors = np.concatenate((colors_1, colors_2), axis=0)
+    new_ply = o3d.geometry.PointCloud()
+    new_ply.points = new_points
+    new_ply.colors = new_colors
+    o3d.io.write_point_cloud(file_name, new_ply)
+    return new_ply
 
 def main():
     parser = make_parser()
@@ -72,16 +96,17 @@ def main():
     estimated_transform = output_dict["estimated_transform"]
     transform = data_dict["transform"]
 
-    # visualization
     ref_pcd = make_open3d_point_cloud(ref_points)
     ref_pcd.estimate_normals()
     ref_pcd.paint_uniform_color(get_color("custom_yellow"))
     src_pcd = make_open3d_point_cloud(src_points)
     src_pcd.estimate_normals()
     src_pcd.paint_uniform_color(get_color("custom_blue"))
-    draw_geometries(ref_pcd, src_pcd)
     src_pcd = src_pcd.transform(estimated_transform)
-    draw_geometries(ref_pcd, src_pcd)
+    merge_ply(src_pcd, ref_pcd, "for_comparison.ply")
+    ref_pcd.colors = o3d.utility.Vector3dVector(data_dict["ref_colors"])
+    src_pcd.colors = o3d.utility.Vector3dVector(data_dict["src_colors"])
+    merge_ply(src_pcd, ref_pcd, "for_result.ply")
 
     # compute error
     rre, rte = compute_registration_error(transform, estimated_transform)
