@@ -17,6 +17,7 @@ def make_parser():
     parser.add_argument("--src_file", required=True, help="src ply file path")
     parser.add_argument("--ref_file", required=True, help="ref ply file path")
     parser.add_argument("--weights", required=True, help="model weights file path")
+    parser.add_argument("--gt_file", required=True, help="ground-truth transformation file")
     return parser
 
 
@@ -42,7 +43,9 @@ def load_data(args):
         "src_feats": src_feats.astype(np.float32),
 
     }
-
+    if args.gt_file is not None:
+        transform = np.load(args.gt_file)
+        data_dict["transform"] = transform.astype(np.float32)
     return data_dict
 
 def merge_ply(ply_1, ply_2, file_name):
