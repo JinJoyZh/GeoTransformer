@@ -1,25 +1,22 @@
 import argparse
 
-import torch
 import numpy as np
-import plyfile
-
 import open3d as o3d
-
-from geotransformer.utils.data import registration_collate_fn_stack_mode
-from geotransformer.utils.torch import to_cuda, release_cuda
-from geotransformer.utils.open3d import make_open3d_point_cloud, get_color, draw_geometries
-from geotransformer.utils.registration import compute_registration_error
+import torch
 
 from config import make_cfg
+from geotransformer.utils.data import registration_collate_fn_stack_mode
+from geotransformer.utils.open3d import make_open3d_point_cloud, get_color
+from geotransformer.utils.registration import compute_registration_error
+from geotransformer.utils.torch import to_cuda, release_cuda
 from model import create_model
+import datetime
 
 
 def make_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--src_file", required=True, help="src point cloud numpy file")
     parser.add_argument("--ref_file", required=True, help="src point cloud numpy file")
-    parser.add_argument("--gt_file", required=True, help="ground-truth transformation file")
     parser.add_argument("--weights", required=True, help="model weights file")
     return parser
 
@@ -46,10 +43,6 @@ def load_data(args):
 
     }
 
-    if args.gt_file is not None:
-        transform = np.load(args.gt_file)
-        data_dict["transform"] = transform.astype(np.float32)
-
     return data_dict
 
 def merge_ply(ply_1, ply_2, file_name):
@@ -66,9 +59,9 @@ def merge_ply(ply_1, ply_2, file_name):
     return new_ply
 
 def main():
+    start_time = datetime.datetime.now()
     parser = make_parser()
     args = parser.parse_args()
-
     cfg = make_cfg()
 
     # prepare data
@@ -94,7 +87,6 @@ def main():
     ref_points = output_dict["ref_points"]
     src_points = output_dict["src_points"]
     estimated_transform = output_dict["estimated_transform"]
-    transform = data_dict["transform"]
 
     ref_pcd = make_open3d_point_cloud(ref_points)
     ref_pcd.estimate_normals()
@@ -107,10 +99,11 @@ def main():
     ref_pcd.colors = o3d.utility.Vector3dVector(data_dict["ref_colors"])
     src_pcd.colors = o3d.utility.Vector3dVector(data_dict["src_colors"])
     merge_ply(src_pcd, ref_pcd, "for_result.ply")
-
-    # compute error
-    rre, rte = compute_registration_error(transform, estimated_transform)
-    print(f"RRE(deg): {rre:.3f}, RTE(m): {rte:.3f}")
+    # compute time cost
+    end_time = datetime.datetime.now()
+    time_consumed = (end_time - start_time).seconds
+    print("all done! Time consumed: ")
+    print(time_consumed)
 
 
 if __name__ == "__main__":
