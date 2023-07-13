@@ -49,17 +49,25 @@ def load_data(args):
         data_dict["transform"] = transform.astype(np.float32)
     return data_dict
 
-def merge_ply(ply_1, ply_2, file_name):
-    points_1 = np.asarray(ply_1.points)
-    colors_1 = np.asarray(ply_1.colors)
-    points_2 = np.asarray(ply_2.points)
-    colors_2 = np.asarray(ply_2.colors)
+def write_ply_files(src_ply, ref_ply, file_name):
+    points_1 = np.asarray(src_ply.points)
+    colors_1 = np.asarray(src_ply.colors)
+    points_2 = np.asarray(ref_ply.points)
+    colors_2 = np.asarray(ref_ply.colors)
     new_points = np.concatenate((points_1, points_2), axis=0)
     new_colors = np.concatenate((colors_1, colors_2), axis=0)
     new_ply = o3d.geometry.PointCloud()
     new_ply.points = o3d.utility.Vector3dVector(new_points)
     new_ply.colors = o3d.utility.Vector3dVector(new_colors)
-    o3d.io.write_point_cloud(file_name, new_ply)
+
+    src_ply_file_name = file_name + "_src.ply"
+    o3d.io.write_point_cloud(src_ply_file_name, src_ply)
+
+    src_ply_file_name = file_name + "_ref.ply"
+    o3d.io.write_point_cloud(src_ply_file_name, ref_ply)
+
+    spliced_file_name = file_name + ".ply"
+    o3d.io.write_point_cloud(spliced_file_name, new_ply)
     return new_ply
 
 def main():
@@ -111,10 +119,10 @@ def main():
     src_pcd.estimate_normals()
     src_pcd.paint_uniform_color(get_color("custom_blue"))
     src_pcd = src_pcd.transform(estimated_transform)
-    merge_ply(src_pcd, ref_pcd, "./output/for_comparison.ply")
+    write_ply_files(src_pcd, ref_pcd, "./output/for_comparison")
     ref_pcd.colors = o3d.utility.Vector3dVector(data_dict["ref_colors"])
     src_pcd.colors = o3d.utility.Vector3dVector(data_dict["src_colors"])
-    merge_ply(src_pcd, ref_pcd, "./output/for_result.ply")
+    write_ply_files(src_pcd, ref_pcd, "./output/for_result")
     # compute time cost
     end_time = datetime.datetime.now()
     time_consumed = (end_time - start_time).seconds

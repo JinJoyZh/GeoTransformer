@@ -8,6 +8,8 @@ def get_color(color_name):
         return np.asarray([255.0, 204.0, 102.0]) / 255.0
     if color_name == "custom_blue":
         return np.asarray([102.0, 153.0, 255.0]) / 255.0
+    if color_name == "custom_green":
+        return np.asarray([153.0, 102.0, 255.0]) / 255.0
     assert color_name in colors.CSS4_COLORS
     return np.asarray(colors.to_rgb(colors.CSS4_COLORS[color_name]))
 
