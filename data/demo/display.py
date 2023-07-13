@@ -25,7 +25,7 @@ if __name__ == '__main__':
     merge_ply([plyfile_1, plyfile_2, plyfile_3], "registration_result.ply")
     plyfile_1 = plyfile_1.paint_uniform_color(get_color("custom_yellow"))
     plyfile_2 = plyfile_2.paint_uniform_color(get_color("custom_blue"))
-    plyfile_3 = plyfile_3.paint_uniform_color(get_color("custom_green"))
+    plyfile_3 = plyfile_3.paint_uniform_color(get_color("custom_purple"))
     final_ply = merge_ply([plyfile_1, plyfile_2, plyfile_3], "for_analysis.ply")
     o3d.visualization.draw_geometries([final_ply])
 
