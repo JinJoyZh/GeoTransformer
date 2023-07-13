@@ -65,18 +65,19 @@ def recordPoints(src, ref):
 if __name__ == '__main__':
     # path = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused1.ply'
     # ply = o3d.io.read_point_cloud(path)
-    # ply = ply.voxel_down_sample(voxel_size=0.07)
+    # ply = ply.voxel_down_sample(voxel_size=0.05)
     # print(ply)
     # o3d.visualization.draw_geometries([ply])
+
+    #for experiment
+    path = '/Users/jinjoy/Desktop/tmp/output/for_result.ply'
+    ply = o3d.io.read_point_cloud(path)
+    print(ply)
+    o3d.visualization.draw_geometries([ply])
 
     # src = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused1.ply'
     # ref = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused2.ply'
     # recordPoints(src, ref)
-
-    a = read_npy("src_points.npy")
-    b = read_npy("ref.npy")
-    print(a)
-    print(b)
 
     # ply_path_1 = 'cloud_1.ply'
     # ply_1 = create_ply(ply_path_1)

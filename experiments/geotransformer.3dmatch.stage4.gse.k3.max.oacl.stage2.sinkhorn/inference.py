@@ -6,6 +6,7 @@ import open3d as o3d
 import torch
 
 from config import make_cfg
+from geotransformer.utils.common import ensure_dir
 from geotransformer.utils.data import registration_collate_fn_stack_mode
 from geotransformer.utils.open3d import make_open3d_point_cloud, get_color
 from geotransformer.utils.torch import to_cuda, release_cuda
@@ -23,7 +24,7 @@ def make_parser():
 
 def read_points(path):
     plydata = o3d.io.read_point_cloud(path)
-    plydata = plydata.voxel_down_sample(voxel_size=0.07)
+    plydata = plydata.voxel_down_sample(voxel_size=0.025)
     points = np.asarray(plydata.points)
     colors = np.asarray(plydata.colors)
     return points, colors
@@ -62,6 +63,8 @@ def merge_ply(ply_1, ply_2, file_name):
     return new_ply
 
 def main():
+    ensure_dir("./output")
+
     start_time = datetime.datetime.now()
     parser = make_parser()
     args = parser.parse_args()
@@ -108,10 +111,10 @@ def main():
     src_pcd.estimate_normals()
     src_pcd.paint_uniform_color(get_color("custom_blue"))
     src_pcd = src_pcd.transform(estimated_transform)
-    merge_ply(src_pcd, ref_pcd, "for_comparison.ply")
+    merge_ply(src_pcd, ref_pcd, "./output/for_comparison.ply")
     ref_pcd.colors = o3d.utility.Vector3dVector(data_dict["ref_colors"])
     src_pcd.colors = o3d.utility.Vector3dVector(data_dict["src_colors"])
-    merge_ply(src_pcd, ref_pcd, "for_result.ply")
+    merge_ply(src_pcd, ref_pcd, "./output/for_result.ply")
     # compute time cost
     end_time = datetime.datetime.now()
     time_consumed = (end_time - start_time).seconds
