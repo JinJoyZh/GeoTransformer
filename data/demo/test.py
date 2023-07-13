@@ -17,6 +17,7 @@ def read_ply_coors(path):
 def read_npy(path):
     a = np.load(path)
     print(a.shape)
+    return a
 
 def read_ply_o3(path):
     print("Testing IO for meshes ...")
@@ -45,12 +46,37 @@ def merge_ply(ply_1, ply_2):
     o3d.io.write_point_cloud("merge_test.ply", new_ply)
     return new_ply
 
+def read_points(path):
+    plydata = o3d.io.read_point_cloud(path)
+    plydata = plydata.voxel_down_sample(voxel_size=0.1)
+    points = np.asarray(plydata.points)
+    print(points.shape)
+    colors = np.asarray(plydata.colors)
+    return points, colors
+def recordPoints(src, ref):
+    src_points, src_colors = read_points(src)
+    np.save('src_points.npy', src_points)
+    np.save('src_colors.npy', src_colors)
+    ref_points, ref_colors = read_points(ref)
+    np.save('ref_points.npy', ref_points)
+    np.save('ref_colors.npy', ref_colors)
+
+
 if __name__ == '__main__':
-    path = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused1.ply'
-    ply = o3d.io.read_point_cloud(path)
-    ply = ply.voxel_down_sample(voxel_size=0.07)
-    print(ply)
-    o3d.visualization.draw_geometries([ply])
+    # path = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused1.ply'
+    # ply = o3d.io.read_point_cloud(path)
+    # ply = ply.voxel_down_sample(voxel_size=0.07)
+    # print(ply)
+    # o3d.visualization.draw_geometries([ply])
+
+    # src = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused1.ply'
+    # ref = '/Users/jinjoy/resource/3DRestructiom/dataset/inner/fused/fused2.ply'
+    # recordPoints(src, ref)
+
+    a = read_npy("src_points.npy")
+    b = read_npy("ref.npy")
+    print(a)
+    print(b)
 
     # ply_path_1 = 'cloud_1.ply'
     # ply_1 = create_ply(ply_path_1)

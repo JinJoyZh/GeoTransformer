@@ -56,8 +56,8 @@ def merge_ply(ply_1, ply_2, file_name):
     new_points = np.concatenate((points_1, points_2), axis=0)
     new_colors = np.concatenate((colors_1, colors_2), axis=0)
     new_ply = o3d.geometry.PointCloud()
-    new_ply.points = new_points
-    new_ply.colors = new_colors
+    new_ply.points = o3d.utility.Vector3dVector(new_points)
+    new_ply.colors = o3d.utility.Vector3dVector(new_colors)
     o3d.io.write_point_cloud(file_name, new_ply)
     return new_ply
 
