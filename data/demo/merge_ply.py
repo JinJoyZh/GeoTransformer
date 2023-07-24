@@ -1,8 +1,13 @@
+import os
+import argparse
 import numpy as np
 import open3d as o3d
 
-from geotransformer.utils.open3d import get_color
-
+def make_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", required=True, help="point cloud files that to be merged")
+    parser.add_argument("-o", required=True, help="the path of output file")
+    return parser
 
 def merge_ply(ply_files, final_file_name):
     final_ply = o3d.geometry.PointCloud()
@@ -19,17 +24,16 @@ def merge_ply(ply_files, final_file_name):
     return final_ply
 
 if __name__ == '__main__':
-
-    plyfile_1 = o3d.io.read_point_cloud("/Users/jinjoy/resource/3DRestructiom/experiment/r3/UVA2.ply")
-    plyfile_2 = o3d.io.read_point_cloud("/Users/jinjoy/resource/3DRestructiom/experiment/r3/UVA1_transfer.ply")
-    merge_ply([plyfile_1, plyfile_2], "registration_result.ply")
-    plyfile_1 = plyfile_1.paint_uniform_color(get_color("custom_yellow"))
-    plyfile_2 = plyfile_2.paint_uniform_color(get_color("custom_blue"))
-    final_ply = merge_ply([plyfile_1, plyfile_2], "for_analysis.ply")
+    parser = make_parser()
+    args = parser.parse_args()
+    plyfiles = []
+    for root, dirs, files in os.walk(args.i, topdown=False):
+        for name in files:
+            if(name.endswith('.ply')):
+                file_path = os.path.join(root, name)
+                plyfile = o3d.io.read_point_cloud(file_path)
+                plyfiles.append(plyfile)
+    final_ply = merge_ply(plyfiles, args.o)
     o3d.visualization.draw_geometries([final_ply])
-
-
-
-
 
 

@@ -63,9 +63,8 @@ def recordPoints(src, ref):
 
 
 if __name__ == '__main__':
-    path = '/Users/jinjoy/Desktop/output/fuse_output/for_analysis.ply'
+    path = '/Users/jinjoy/resource/3DRestructiom/experiment/r3/for_analysis.ply'
     ply = o3d.io.read_point_cloud(path)
-    print(ply)
     o3d.visualization.draw_geometries([ply])
 
     #for experiment
